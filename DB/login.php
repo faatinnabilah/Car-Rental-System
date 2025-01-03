@@ -3,16 +3,17 @@ include 'home.php';
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
+    //Input sanitization, remove whitespace
     $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
     $psswd = trim($_POST['psswd']);
 
+    //Input validation
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         echo "<div class='message'>Invalid email format.</div>";
         exit;
     }
 
-    
-
+    //Use prepared statement
     $sql = "SELECT * FROM Users WHERE email = ?";
     $stmt = $connect->prepare($sql);
     $stmt->bind_param("s", $email);

@@ -7,14 +7,26 @@ if ($connect->connect_error) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
-    $name = trim($_POST['name']);
-    $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
-    $psswd = trim($_POST['psswd']);
-    $role = trim($_POST['role']);
+     //input sanitization, remove whitespace
+     $name = htmlspecialchars(trim($_POST['name'])); 
+     $email = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL); 
+     $psswd = trim($_POST['psswd']); 
+     $role = htmlspecialchars(trim($_POST['role']));
 
-    //email format
+    
+    // Input validation
+    if (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        echo("<div class='message'>Invalid name format!</div>");
+        exit;
+    }
+
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "<div class='message'>Invalid email format.</div>";
+        echo("<div class='message'>Invalid email format!</div>");
+        exit;
+    }
+
+    if (strlen($psswd) < 8) {
+        echo("<div class='message'>Password must be at least 8 characters!</div>");
         exit;
     }
 
@@ -43,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
 
     $psswd = password_hash($psswd, PASSWORD_BCRYPT);
 
+    // Check for existing user using a prepared statement
     $sql = "SELECT * FROM Users WHERE email = ?";
     $stmt = $connect->prepare($sql);
     $stmt->bind_param("s", $email);
